@@ -1,32 +1,31 @@
 package crypto
 
 import (
-	"time"
 	"crypto/sha256"
+	"fmt"
+	"time"
 )
 
-interface Block { }
-
-type block struct {
-	timestamp *time.Time
-	data []byte
-	hash []byte
-	//prevHash []byte
-	prevBlock Block
+type Block struct {
+	timestamp time.Time
+	data      []byte
+	hash      [32]byte
+	prevBlock *Block
 }
 
-func (s *block) generateHash(){
-	prevHash := ""
+func (s *Block) GetHash() [32]byte {
+	var prevHash [32]byte
 	if s.prevBlock != nil {
-		prevHash = s.prevBlock.hash
+		b := s.prevBlock
+		prevHash = b.hash
 	}
-	s.hash = sha256.Sum256([]byte(fmt.Sprintf("%s%s%s",prevHash,s.timestamp,string(s.data))))
+
+	return sha256.Sum256([]byte(fmt.Sprintf("%s%s%s", prevHash, s.timestamp, string(s.data))))
 }
 
-func New(data []byte, timestamp *time.Time, prev Block) Block {
-	return &block{
+func NewBlock(data []byte, timestamp time.Time) Block {
+	return Block{
 		timestamp: timestamp,
-		data: data,
-		prevBlock: prev,
+		data:      data,
 	}
 }
